@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Needed for SonarQube to properly analyze the code
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -25,7 +25,7 @@ jobs:
         uses: SonarSource/sonarqube-github-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed for PR decoration
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   unit-tests:
     needs: sonarqube-analysis
