@@ -1,0 +1,105 @@
+-- Borrar la base de datos si ya existe
+DROP DATABASE IF EXISTS PFinal;
+
+-- Crear la base de datos
+CREATE DATABASE PFinal;
+USE PFinal;
+
+-- Crear la tabla productos
+CREATE TABLE productos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    cantidad INT NOT NULL,
+    costo DECIMAL(10, 2) NOT NULL
+);
+
+
+-- Crear la tabla usuarios
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    nombre VARCHAR(255) NOT NULL,
+    rfc VARCHAR(255) NOT NULL,
+    celular VARCHAR(255) NOT NULL,
+    calle VARCHAR(255) NOT NULL,
+    numero VARCHAR(255) NOT NULL,
+    codigopostal VARCHAR(255) NOT NULL,
+    admin BOOLEAN DEFAULT FALSE
+);
+
+-- Índices para mejorar el rendimiento
+CREATE INDEX idx_usuario_email ON users(email);
+-- Crear la tabla facturas
+CREATE TABLE facturas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATETIME NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+    idcliente INT,
+    FOREIGN KEY (idcliente) REFERENCES users(id)
+);
+
+-- Crear la tabla detallefactura
+CREATE TABLE detallefactura (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idproducto INT,
+    idfactura INT,
+    cantidad INT NOT NULL,
+    costo DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (idproducto) REFERENCES productos(id),
+    FOREIGN KEY (idfactura) REFERENCES facturas(id)
+);
+
+-- Índices para mejorar el rendimiento
+CREATE INDEX idx_factura_fecha ON facturas(fecha);
+CREATE INDEX idx_detallefactura_producto ON detallefactura(idproducto);
+CREATE INDEX idx_detallefactura_factura ON detallefactura(idfactura);
+
+DELIMITER //
+CREATE TRIGGER after_insert_detallefactura
+AFTER INSERT ON detallefactura
+FOR EACH ROW
+BEGIN
+    UPDATE productos
+    SET cantidad = cantidad - NEW.cantidad
+    WHERE id = NEW.idproducto;
+    UPDATE facturas
+    SET total = total + NEW.costo
+    WHERE id = NEW.idfactura;
+END; //
+DELIMITER ;
+
+DELIMITER //
+CREATE TRIGGER before_insert_detallefactura
+BEFORE INSERT ON detallefactura
+FOR EACH ROW
+BEGIN
+    DECLARE stock_actual INT;
+
+    -- Obtener el stock actual del producto
+    SELECT cantidad INTO stock_actual
+    FROM productos
+    WHERE id = NEW.idproducto;
+
+    -- Validar si hay suficiente stock
+    IF stock_actual < NEW.cantidad THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No hay suficiente stock para el producto';
+    END IF;
+END; //
+DELIMITER ;
+
+CREATE VIEW vista_facturas_productos AS
+SELECT
+    f.id AS id,
+    f.fecha AS fecha,
+    p.nombre AS nombre,
+    df.cantidad AS cantidad,
+    p.costo AS precio,
+    f.total AS total
+FROM
+    facturas f
+JOIN
+    detallefactura df ON f.id = df.idfactura
+JOIN
+    productos p ON df.idproducto = p.id;

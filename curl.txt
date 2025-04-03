@@ -1,0 +1,20 @@
+Iniciar sesión
+curl -d "{\"username\":\"fernanditoito20\", \"password\":\"123\"}" -H "Content-Type: application/json" -X POST http://localhost:3000/login
+
+ADMIN
+Mostrar clientes
+curl -H "Content-Type: aplication/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlbGVtYXRpY2EiLCJ1c2VySWQiOjEsImlhdCI6MTcxNzI2MzM5NCwiZXhwIjoxNzE3ODY4MTk0fQ.NvwbQKu8U4HsKU3ZhF7h6YYkJAIgmjsWSdQ2whOy83U" http://localhost:3000/clientes
+
+Mostrar productos
+curl -H "Content-Type: aplication/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlbGVtYXRpY2EiLCJ1c2VySWQiOjEsImlhdCI6MTcxNzI2MzM5NCwiZXhwIjoxNzE3ODY4MTk0fQ.NvwbQKu8U4HsKU3ZhF7h6YYkJAIgmjsWSdQ2whOy83U" http://localhost:3000/productos
+
+Modificar productos
+curl -d "{\"id\":\"1\", \"dato\":\"cantidad\", \"valor\":\"10\"}" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlbGVtYXRpY2EiLCJ1c2VySWQiOjEsImlhdCI6MTcxNzI2MzM5NCwiZXhwIjoxNzE3ODY4MTk0fQ.NvwbQKu8U4HsKU3ZhF7h6YYkJAIgmjsWSdQ2whOy83U" -X PUT http://localhost:3000/productos
+
+Agregar productos
+curl -d "{\"nombre\":\"Producto\", \"cantidad\":\"1\", \"costo\":\"100\"}" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlbGVtYXRpY2EiLCJ1c2VySWQiOjEsImlhdCI6MTcxNzI2MzM5NCwiZXhwIjoxNzE3ODY4MTk0fQ.NvwbQKu8U4HsKU3ZhF7h6YYkJAIgmjsWSdQ2whOy83U" -X POST http://localhost:3000/productos
+
+
+curl -d "{\"nombre\":\"Producto\", \"cantidad\":\"100\", \"costo\":\"150\"}" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlbGVtYXRpY2EiLCJ1c2VySWQiOjEsImlhdCI6MTcxNzI2MzM5NCwiZXhwIjoxNzE3ODY4MTk0fQ.NvwbQKu8U4HsKU3ZhF7h6YYkJAIgmjsWSdQ2whOy83U" -X POST http://localhost:3000/productos
+curl -d "{\"nombre\":\"Producto 2\", \"cantidad\":\"50\", \"costo\":\"250\"}" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlbGVtYXRpY2EiLCJ1c2VySWQiOjEsImlhdCI6MTcxNzI2MzM5NCwiZXhwIjoxNzE3ODY4MTk0fQ.NvwbQKu8U4HsKU3ZhF7h6YYkJAIgmjsWSdQ2whOy83U" -X POST http://localhost:3000/productos
+curl -d "{\"nombre\":\"Producto 3\", \"cantidad\":\"200\", \"costo\":\"50\"}" -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlbGVtYXRpY2EiLCJ1c2VySWQiOjEsImlhdCI6MTcxNzI2MzM5NCwiZXhwIjoxNzE3ODY4MTk0fQ.NvwbQKu8U4HsKU3ZhF7h6YYkJAIgmjsWSdQ2whOy83U" -X POST http://localhost:3000/productos

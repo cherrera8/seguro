@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        button
+        {
+            background-color: unset;
+            border: none;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .nav-item {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            display: inline-block;
+        }
+
+        .nav-item:hover {
+            background-color: #575757;
+        }
+
+        .search-bar {
+            padding: 5px;
+            margin-left: 20px;
+            margin-right: 20px;
+            border: none;
+            border-radius: 5px;
+            width: 69%;
+        }
+
+        #container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #product-list {
+            margin-top: 20px;
+        }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-name {
+            flex: 2;
+        }
+
+        .product-quantity,
+        .product-price {
+            flex: 1;
+        }
+
+        .input-quantity {
+            width: 60px;
+            margin-right: 10px;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .add-to-cart {
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-to-cart:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <button id="home" class="nav-item">Inicio</button>
+        <input type="text" placeholder="Buscar" class="search-bar" id="nom">
+        <button id="busq" class="nav-item">Buscar</button>
+        <button id="pedidos" class="nav-item">Mis Pedidos</button>
+        <button id="out" class="nav-item">Cerrar Sesión</button>
+    </nav>
+    
+    <div id="container">
+        <h1>Lista de Productos</h1>
+        <div id="product-list"></div>
+    </div>
+</body>
+<script>
+    let idArr = [];
+    let cantArr = [];
+    function Add(id, cant)
+    {
+        if (sessionStorage.getItem("pedidoId") != null)
+        {
+            idArr = JSON.parse(sessionStorage.getItem("pedidoId"));
+            cantArr = JSON.parse(sessionStorage.getItem("pedidoCant"));
+        }
+        idArr.push(id);
+        cantArr.push(cant);
+        sessionStorage.setItem("pedidoId", JSON.stringify(idArr));
+        sessionStorage.setItem("pedidoCant", JSON.stringify(cantArr));
+    }
+
+    document.getElementById("home").addEventListener('click', () =>
+    {
+        location.href = "shop.html";
+    });
+    document.getElementById("pedidos").addEventListener('click', () =>
+    {
+        location.href = "pedidos.html";
+    });
+    document.getElementById("out").addEventListener('click', () =>
+    {
+        sessionStorage.removeItem("token");
+        location.href = "index.html";
+    });
+    if (!sessionStorage.getItem("token"))
+    {
+        location.href = "index.html";
+    }
+    let token = sessionStorage.getItem("token");
+    
+    //#region Productos
+    fetch("http://localhost:3000/productos",
+    {
+        headers:
+        {
+            "Authorization": `Bearer ${token}`
+        },
+    })
+    .then((response) => response.json())
+    .then((productos) =>
+    {
+        for (let i = 0; i < productos.length; i++)
+        {
+            let newProduct =
+            `
+                <div class="product-item">
+                    <span class="product-name">${productos[i].nombre}</span>
+                    <span class="product-quantity">Cantidad: ${productos[i].cantidad}</span>
+                    <span class="product-price">$${productos[i].costo}</span>
+                    <input type="number" class="input-quantity" value="1" min="1" id="cant${productos[i].id}">
+                    <button class="add-to-cart" type="button" onclick="Add(${productos[i].id}, getElementById('cant${productos[i].id}').value)">Agregar al carrito</button>
+                </div>
+            `
+            document.getElementById("product-list").innerHTML += newProduct;
+        }
+    });
+
+    document.getElementById("busq").addEventListener('click', () =>
+    {
+        fetch(`http://localhost:3000/productos/${document.getElementById("nom").value}`,
+        {
+            headers:
+            {
+                "Authorization": `Bearer ${token}`
+            },
+        })
+        .then((response) => response.json())
+        .then((productos) =>
+        {
+            document.getElementById("product-list").innerHTML = "";
+            for (let i = 0; i < productos.length; i++)
+            {
+                let newProduct =
+                `
+                    <div class="product-item">
+                        <span class="product-name">${productos[i].nombre}</span>
+                        <span class="product-quantity">Cantidad: ${productos[i].cantidad}</span>
+                        <span class="product-price">$${productos[i].costo}</span>
+                        <input type="number" class="input-quantity" value="1" min="1" id="cant${productos[i].id}">
+                        <button class="add-to-cart" type="button" onclick="Add(${productos[i].id}, getElementById("cant${productos[i].id}").value)">Agregar al carrito</button>
+                    </div>
+                `
+                document.getElementById("product-list").innerHTML += newProduct;
+            }
+        });
+    });
+    //#endregion
+</script>
+</html>

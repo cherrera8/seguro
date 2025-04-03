@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        button
+        {
+            background-color: unset;
+            border: none;
+        }
+
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .nav-item {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            display: inline-block;
+        }
+
+        .nav-item:hover {
+            background-color: #575757;
+        }
+
+        .search-bar {
+            padding: 5px;
+            margin-left: 20px;
+            margin-right: 20px;
+            border: none;
+            border-radius: 5px;
+            width: 69%;
+        }
+
+        #container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #product-list {
+            margin-top: 20px;
+        }
+        #product-list2 {
+            margin-top: 20px;
+        }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-name {
+            flex: 2;
+        }
+
+        .product-quantity,
+        .product-price {
+            flex: 1;
+        }
+
+        .input-quantity {
+            width: 60px;
+            margin-right: 10px;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .add-to-cart {
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-to-cart:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <button id="home" class="nav-item">Inicio</button>
+        <input type="text" placeholder="Buscar" class="search-bar" id="nom">
+        <button id="busq" class="nav-item">Buscar</button>
+        <button id="pedidos" class="nav-item">Mis Pedidos</button>
+        <button id="out" class="nav-item">Cerrar Sesión</button>
+    </nav>
+    
+    <div id="container">
+        <div id="cont0" style="display: none;">
+            <h1>Pedido actual</h1>
+            <div id="product-list"></div>
+        </div>
+        <div id="cont2">
+            <h1>Mis pedidos</h1>
+            <div id="product-list2"></div>
+        </div>
+    </div>
+</body>
+<script>
+    let idArr = [];
+    let cantArr = [];
+    function Del(id)
+    {
+        let idArr = JSON.parse(sessionStorage.getItem("pedidoId"));
+        let cantArr = JSON.parse(sessionStorage.getItem("pedidoCant"));
+        for (let i = id; i < idArr.length - 1; i++)
+        {
+            idArr[i] = idArr[i + 1];
+            cantArr[i] = cantArr[i + 1];
+        }
+        idArr.pop();
+        cantArr.pop();
+        if (idArr.length > 0)
+        {
+            sessionStorage.setItem("pedidoId", JSON.stringify(idArr));
+            sessionStorage.setItem("pedidoCant", JSON.stringify(cantArr));
+        }
+        else
+        {
+            sessionStorage.removeItem("pedidoId");
+            sessionStorage.removeItem("pedidoCant");
+        }
+        location.href = "pedidos.html";
+    }
+
+    document.getElementById("home").addEventListener('click', () =>
+    {
+        location.href = "shop.html";
+    });
+    document.getElementById("pedidos").addEventListener('click', () =>
+    {
+        location.href = "pedidos.html";
+    });
+    document.getElementById("out").addEventListener('click', () =>
+    {
+        sessionStorage.removeItem("token");
+        location.href = "index.html";
+    });
+    if (!sessionStorage.getItem("token"))
+    {
+        location.href = "index.html";
+    }
+    let token = sessionStorage.getItem("token");
+
+    if (sessionStorage.getItem("pedidoId") != null)
+    {
+        document.getElementById("cont0").style.display = "block";
+        let id = JSON.parse(sessionStorage.getItem("pedidoId"));
+        let cant = JSON.parse(sessionStorage.getItem("pedidoCant"));
+        for (let i = 0; i < id.length; i++)
+        {
+            fetch(`http://localhost:3000/productosId/${id[i]}`,
+            {
+                headers:
+                {
+                    "Authorization": `Bearer ${token}`
+                },
+            })
+            .then((response) => response.json())
+            .then((productos) =>
+            {
+                let newProduct =
+                `
+                    <div class="product-item product-item2">
+                        <span class="product-name">${productos[0].nombre}</span>
+                        <span class="product-quantity" id="${cant[i]}">Cantidad: ${cant[i]}</span>
+                        <span class="product-price" id="${productos[0].costo}">$${productos[0].costo}</span>
+                        <button class="add-to-cart" type="button" onclick="Del(${i})">Eliminar producto</button>
+                    </div>
+                `
+                document.getElementById("product-list").innerHTML += newProduct;
+            });
+        }
+        document.getElementById("cont0").innerHTML += `<button class="add-to-cart" type="button" onclick="Completar()">Completar pedido</button>`;
+    }
+
+    function Completar()
+    {
+        let nom = [];
+        let cant = [];
+        let cost = [];
+        for (let i = 0; i < document.getElementsByClassName("product-item2").length; i++)
+        {
+            nom[i] = document.getElementsByClassName("product-name")[i].innerHTML;
+            cant[i] = Number(document.getElementsByClassName("product-quantity")[i].id);
+            cost[i] = Number(document.getElementsByClassName("product-price")[i].id);
+        }
+        fetch('http://localhost:3000/facturas',
+        {
+            method: 'POST',
+            headers:
+            {
+                'Content-Type': 'application/json', "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(
+            {
+                nombre: nom,
+                cantidad: cant,
+                costo: cost
+            })
+        })
+        .then(response =>
+        {
+            if (response.ok)
+            {
+                sessionStorage.removeItem("pedidoId");
+                sessionStorage.removeItem("pedidoCant");
+                window.location.href = "pedidos.html";
+            }
+            return response.json();
+        });
+    }
+
+    fetch('http://localhost:3000/facturas',
+    {
+        headers:
+        {
+            "Authorization": `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(factura =>
+    {
+        for (let i = 0; i < factura.length; i++)
+        {
+            let newProduct =
+            `
+                <div class="product-item">
+                    <h4 class="product-name">${factura[i].fecha}</span>
+                    <h4 class="product-name">Total: $${factura[i].total}</span>
+                </div>
+            `;
+            idTemp = factura[i].id;
+            fetch(`http://localhost:3000/detalles/${factura[i].id}`,
+            {
+                headers:
+                {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(detalle =>
+            {
+                for (let j = 0; j < detalle.length; j++)
+                {
+                    newProduct +=
+                    `
+                        <div class="product-item">
+                            <span class="product-name">${detalle[j].nombre}</span>
+                            <span class="product-quantity">Cantidad: ${detalle[j].cantidad}</span>
+                            <span class="product-price">$${detalle[j].precio}</span>
+                            <span class="product-price">Total: $${detalle[j].precio * detalle[j].cantidad}</span>
+                        </div>
+                    `;
+                }
+                document.getElementById("product-list2").innerHTML += newProduct;
+            });
+        }
+    });
+</script>
+</html>
